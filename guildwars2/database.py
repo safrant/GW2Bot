@@ -423,3 +423,10 @@ class DatabaseMixin:
         else:
             choice = items[0]
         return choice
+
+    async def update_emojis(self, guild):
+        emojis = {"gold": None, "silver": None, "copper": None}
+        for em in guild.emojis:
+            if em.name in emojis:
+                emojis[em.name] = str(em)
+        await self.bot.database.set_cog_config(self, {"emojis": emojis})

@@ -76,18 +76,18 @@ class CommerceMixin:
                 if op(offer["unit_price"], price):
                     break
                 undercuts += offer["listings"]
-            undercuts = "· Undercuts: {}".format(
+            undercuts = "\nUndercuts: {}".format(
                 undercuts) if undercuts else ""
             if quantity == 1:
                 total = ""
             else:
-                total = " - Total: " + self.gold_to_coins(quantity * price)
+                total = " - Total: " + await self.gold_to_coins(
+                    ctx, quantity * price)
             data.add_field(
                 name=item_name,
                 value="{} x {}{}\nMax. offer: {} {}".format(
-                    quantity,
-                    self.gold_to_coins(price), total,
-                    self.gold_to_coins(max_price), undercuts),
+                    quantity, await self.gold_to_coins(ctx, price), total,
+                    await self.gold_to_coins(ctx, max_price), undercuts),
                 inline=False)
 
         try:
@@ -202,13 +202,31 @@ class CommerceMixin:
         except discord.HTTPException:
             await ctx.send("Need permission to embed links")
 
-    def gold_to_coins(self, money):
+    async def gold_to_coins(self, ctx, money, doc=None):
+        if not doc:
+            doc = await self.bot.database.get_cog_config(self)
+            doc = doc.get("emojis")
+        can_display_emoji = (
+            doc and ctx.channel.permissions_for(ctx.me).external_emojis)
+
+        def display(currency, amount):
+            if not amount:
+                return ""
+            curr_str = str(amount) + " {}".format(currency)
+            if not can_display_emoji:
+                return curr_str
+            emoji = doc.get(currency)
+            if emoji:
+                return str(amount) + emoji
+            return curr_str
+
         gold, remainder = divmod(money, 10000)
         silver, copper = divmod(remainder, 100)
-        gold = "{} gold".format(gold) if gold else ""
-        silver = "{} silver".format(silver) if silver else ""
-        copper = "{} copper".format(copper) if copper else ""
-        return ", ".join(filter(None, [gold, silver, copper]))
+        gold = display("gold", gold)
+        silver = display("silver", silver)
+        copper = display("copper", copper)
+        join_str = "" if can_display_emoji else ", "
+        return join_str.join(filter(None, [gold, silver, copper]))
 
     def rarity_to_color(self, rarity):
         return int(self.gamedata["items"]["rarity_colors"][rarity], 0)
