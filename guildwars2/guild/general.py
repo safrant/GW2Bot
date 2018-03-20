@@ -61,6 +61,44 @@ class GeneralGuild:
             await ctx.send(embed=data)
         except discord.Forbidden:
             await ctx.send("Need permission to embed links")
+    
+    @guild.command(name="motd", usage="<guild name>")
+    @commands.cooldown(1, 20, BucketType.user)
+    async def guild_info(self, ctx, *, guild_name=None):
+        """Guild Message of the Dayf
+
+        Required permissions: guilds
+        """
+        # Read preferred guild from DB
+        try:
+            guild = await self.get_guild(ctx, guild_name=guild_name)
+            if not guild:
+                raise BadArgument
+            guild_id = guild["id"]
+            guild_name = guild["name"]
+            endpoint = "guild/motd".format(guild_id)
+            results = await self.call_api(endpoint, ctx.author, ["guilds"])
+        except (IndexError, APINotFound):
+            return await ctx.send("Invalid guild name")
+        except APIForbidden:
+            return await ctx.send(
+                "You don't have enough permissions in game to "
+                "use this command")
+        except APIError as e:
+            return await self.error_handler(ctx, e)
+        data = discord.Embed(
+            description='General Info about {0}'.format(guild_name),
+            colour=self.embed_color)
+        data.set_author(name="{} [{}]".format(results["name"], results["tag"]))
+        if "motd" in results:
+            data.add_field(
+                name='Message of the day:',
+                value=results["motd"],
+                inline=False)
+        try:
+            await ctx.send(embed=data)
+        except discord.Forbidden:
+            await ctx.send("Need permission to embed links")
 
     @guild.command(name="members", usage="<guild name>")
     @commands.cooldown(1, 20, BucketType.user)
