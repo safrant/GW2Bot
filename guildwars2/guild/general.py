@@ -76,7 +76,7 @@ class GeneralGuild:
                 raise BadArgument
             guild_id = guild["id"]
             guild_name = guild["name"]
-            endpoint = "guild/motd".format(guild_id)
+            endpoint = "guild/{0}".format(guild_id)
             results = await self.call_api(endpoint, ctx.author, ["guilds"])
         except (IndexError, APINotFound):
             return await ctx.send("Invalid guild name")
