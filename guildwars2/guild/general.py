@@ -65,7 +65,7 @@ class GeneralGuild:
     @guild.command(name="motd", usage="<guild name>")
     @commands.cooldown(1, 20, BucketType.user)
     async def guild_info(self, ctx, *, guild_name=None):
-        """Guild Message of the Dayf
+        """Guild Message of the Day
 
         Required permissions: guilds
         """
