@@ -87,7 +87,7 @@ class GeneralGuild:
         except APIError as e:
             return await self.error_handler(ctx, e)
         data = discord.Embed(
-            description='General Info about {0}'.format(guild_name),
+            description='Greetings traveler',
             colour=self.embed_color)
         data.set_author(name="{} [{}]".format(results["name"], results["tag"]))
         if "motd" in results:
